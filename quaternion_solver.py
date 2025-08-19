@@ -149,49 +149,48 @@ class QuaternionSolver:
     
     def world_to_local_quaternions(self, world_positions: np.ndarray) -> np.ndarray:
         """
-        Convert world positions to local quaternions
+        Convert world positions to local quaternions for bone connections
         
         Args:
             world_positions: Array of shape (68, 3) containing world coordinates for all bones
             
         Returns:
-            Array of shape (68, 4) containing local quaternions (w, x, y, z) for all bones
+            Array of shape (67, 4) containing local quaternions (w, x, y, z) for bone connections
+            Index i represents the quaternion for connection from parent_indices[i+1] to bone i+1
         """
         if world_positions.shape != (68, 3):
             raise ValueError(f"Expected shape (68, 3), got {world_positions.shape}")
         
-        local_quaternions = np.zeros((68, 4))
-        world_quaternions = np.zeros((68, 4))
+        # 67 connections (bone 1-67, since bone 0 is root with no parent)
+        local_quaternions = np.zeros((67, 4))
+        world_quaternions = np.zeros((67, 4))
         
-        # Process bones in hierarchical order
-        for bone_idx in range(68):
+        # Process bone connections (skip root bone index 0)
+        for bone_idx in range(1, 68):
             parent_idx = self.skeleton.parent_indices[bone_idx]
-            children = self.skeleton.get_children(bone_idx)
+            connection_idx = bone_idx - 1  # Map bone index to connection index
             
-            bone_pos = world_positions[bone_idx]
+            # Get positions
+            parent_pos = world_positions[parent_idx]
+            child_pos = world_positions[bone_idx]
             
-            # Find primary child for bone orientation
-            if children:
-                # Use first child as primary direction
-                child_idx = children[0]
-                child_pos = world_positions[child_idx]
-                
-                # Compute world orientation for this bone relative to T-pose
-                world_quat = self.compute_bone_orientation(bone_idx, bone_pos, child_idx, child_pos)
+            # Compute world orientation for this connection relative to T-pose
+            world_quat = self.compute_bone_orientation(parent_idx, parent_pos, bone_idx, child_pos)
+            world_quaternions[connection_idx] = world_quat
+            
+            # Convert to local space relative to parent connection
+            if parent_idx == 0:
+                # Direct child of root - world quaternion is local quaternion
+                local_quaternions[connection_idx] = world_quat
             else:
-                # End effector - use identity quaternion
-                world_quat = np.array([1.0, 0.0, 0.0, 0.0])
-            world_quaternions[bone_idx] = world_quat
-            
-            # Convert to local space relative to parent
-            if parent_idx == -1:
-                # Root bone - world quaternion is local quaternion
-                local_quaternions[bone_idx] = world_quat
-            else:
-                # Child bone - compute relative to parent
-                parent_world_quat = world_quaternions[parent_idx]
-                parent_conjugate = self.quaternion_conjugate(parent_world_quat)
-                local_quaternions[bone_idx] = self.quaternion_multiply(parent_conjugate, world_quat)
+                # Child of non-root bone - compute relative to parent connection
+                parent_connection_idx = parent_idx - 1
+                if parent_connection_idx >= 0:
+                    parent_world_quat = world_quaternions[parent_connection_idx]
+                    parent_conjugate = self.quaternion_conjugate(parent_world_quat)
+                    local_quaternions[connection_idx] = self.quaternion_multiply(parent_conjugate, world_quat)
+                else:
+                    local_quaternions[connection_idx] = world_quat
         
         return local_quaternions
     
@@ -203,13 +202,13 @@ class QuaternionSolver:
             animation_data: Array of shape (num_frames, 68, 3) containing world coordinates
             
         Returns:
-            Array of shape (num_frames, 68, 4) containing local quaternions
+            Array of shape (num_frames, 67, 4) containing local quaternions for bone connections
         """
         num_frames = animation_data.shape[0]
         if animation_data.shape[1:] != (68, 3):
             raise ValueError(f"Expected shape (num_frames, 68, 3), got {animation_data.shape}")
         
-        result = np.zeros((num_frames, 68, 4))
+        result = np.zeros((num_frames, 67, 4))
         
         for frame_idx in range(num_frames):
             result[frame_idx] = self.world_to_local_quaternions(animation_data[frame_idx])

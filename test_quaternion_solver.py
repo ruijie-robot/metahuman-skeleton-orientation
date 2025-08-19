@@ -67,6 +67,7 @@ def test_quaternion_solver():
         # Verify quaternions are normalized
         norms = np.linalg.norm(local_quats, axis=1)
         print(f"  Quaternion norms (should be ~1.0): min={norms.min():.3f}, max={norms.max():.3f}")
+        print(f"  Total connections: {len(local_quats)} (expected 67)")
         
     except Exception as e:
         print(f"✗ Single frame test failed: {e}")
@@ -107,8 +108,8 @@ def demo_usage():
     local_quaternions = solver.process_animation_sequence(animation_data)
     
     print(f"Output: Local quaternions shape {local_quaternions.shape}")
-    print(f"Frame 0, Bone 0 (root) quaternion: {local_quaternions[0, 0]}")
-    print(f"Frame 0, Bone 1 (pelvis) quaternion: {local_quaternions[0, 1]}")
+    print(f"Frame 0, Connection 0 (root→pelvis): {local_quaternions[0, 0]}")
+    print(f"Frame 0, Connection 1 (pelvis→spine_01): {local_quaternions[0, 1]}")
     
     return local_quaternions
 
@@ -216,11 +217,11 @@ def test_tpose_directions():
     
     print("\nT-pose quaternions:")
     result_tpose = solver.process_animation_sequence(animation_data)
-    print(f"Upperarm_l quaternion (T-pose): {result_tpose[0, 8]}")
+    print(f"Connection 7 (clavicle_l→upperarm_l, T-pose): {result_tpose[0, 7]}")
     
     print("\nArm-down quaternions:")
     result_down = solver.process_animation_sequence(animation_data_down)
-    print(f"Upperarm_l quaternion (arm down): {result_down[0, 8]}")
+    print(f"Connection 7 (clavicle_l→upperarm_l, arm down): {result_down[0, 7]}")
 
 if __name__ == "__main__":
     test_quaternion_solver()
