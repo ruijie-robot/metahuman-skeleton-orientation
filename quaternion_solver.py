@@ -66,6 +66,75 @@ class QuaternionSolver:
         """Get quaternion conjugate"""
         return np.array([q[0], -q[1], -q[2], -q[3]])
     
+    def quaternion_from_vectors_standard(self, vec_from: np.ndarray, vec_to: np.ndarray) -> np.ndarray:
+        """
+        Standard quaternion calculation method
+        q = [cos(θ/2), u_x * sin(θ/2), u_y * sin(θ/2), u_z * sin(θ/2)]
+        where axis = (u_x, u_y, u_z) = normalize(a × b)
+        """
+        vec_from = self.normalize_vector(vec_from)
+        vec_to = self.normalize_vector(vec_to)
+        
+        dot_product = np.dot(vec_from, vec_to)
+        
+        if abs(dot_product + 1.0) < 1e-6:
+            # 180-degree rotation
+            perp = np.array([1.0, 0.0, 0.0])
+            if abs(np.dot(vec_from, perp)) > 0.9:
+                perp = np.array([0.0, 0.0, 1.0])
+            return np.array([0.0, perp[0], perp[1], perp[2]])
+        elif abs(dot_product - 1.0) < 1e-6:
+            # No rotation needed
+            return np.array([1.0, 0.0, 0.0, 0.0])
+        else:
+            # Calculate rotation angle and axis
+            theta = np.arccos(np.clip(dot_product, -1.0, 1.0))
+            cross_product = np.cross(vec_from, vec_to)
+            axis = self.normalize_vector(cross_product)
+            
+            # Standard quaternion formula
+            cos_half_theta = np.cos(theta / 2.0)
+            sin_half_theta = np.sin(theta / 2.0)
+            
+            quaternion = np.array([
+                cos_half_theta,
+                axis[0] * sin_half_theta,
+                axis[1] * sin_half_theta,
+                axis[2] * sin_half_theta
+            ])
+            
+            return quaternion
+    
+    def quaternion_from_vectors_optimized(self, vec_from: np.ndarray, vec_to: np.ndarray) -> np.ndarray:
+        """
+        Optimized quaternion calculation method (avoids trigonometric functions)
+        q' = [2*cos²(θ/2), 2*cos(θ/2)*sin(θ/2) * axis]
+           = [1 + cos(θ), sin(θ) * axis]
+           = [1 + dot_product, cross_product]
+        """
+        vec_from = self.normalize_vector(vec_from)
+        vec_to = self.normalize_vector(vec_to)
+        
+        dot_product = np.dot(vec_from, vec_to)
+        
+        if abs(dot_product + 1.0) < 1e-6:
+            # 180-degree rotation
+            perp = np.array([1.0, 0.0, 0.0])
+            if abs(np.dot(vec_from, perp)) > 0.9:
+                perp = np.array([0.0, 0.0, 1.0])
+            return np.array([0.0, perp[0], perp[1], perp[2]])
+        elif abs(dot_product - 1.0) < 1e-6:
+            # No rotation needed
+            return np.array([1.0, 0.0, 0.0, 0.0])
+        else:
+            # Optimized calculation
+            cross_product = np.cross(vec_from, vec_to)
+            w = 1.0 + dot_product  # = 2*cos²(θ/2)
+            quaternion = np.array([w, cross_product[0], cross_product[1], cross_product[2]])
+            quaternion = quaternion / np.linalg.norm(quaternion)
+            
+            return quaternion
+
     def compute_bone_orientation(self, bone_index: int, bone_pos: np.ndarray, 
                                child_pos: Optional[np.ndarray] = None) -> np.ndarray:
         """Compute bone orientation from position and child position relative to T-pose"""
@@ -79,26 +148,8 @@ class QuaternionSolver:
         # Get the initial T-pose direction for this bone
         initial_bone_direction = self.skeleton.get_tpose_bone_direction(bone_index)
         
-        # Compute rotation from initial direction to current direction
-        dot_product = np.dot(initial_bone_direction, current_bone_direction)
-        
-        if abs(dot_product + 1.0) < 1e-6:
-            # 180-degree rotation - find perpendicular axis
-            perp = np.array([1.0, 0.0, 0.0])
-            if abs(np.dot(initial_bone_direction, perp)) > 0.9:
-                perp = np.array([0.0, 0.0, 1.0])
-            quaternion = np.array([0.0, perp[0], perp[1], perp[2]])
-        elif abs(dot_product - 1.0) < 1e-6:
-            # No rotation needed
-            quaternion = np.array([1.0, 0.0, 0.0, 0.0])
-        else:
-            # Normal rotation from initial_bone_direction to current_bone_direction
-            cross_product = np.cross(initial_bone_direction, current_bone_direction)
-            w = 1.0 + dot_product
-            quaternion = np.array([w, cross_product[0], cross_product[1], cross_product[2]])
-            quaternion = quaternion / np.linalg.norm(quaternion)
-        
-        return quaternion
+        # Use standard method as requested
+        return self.quaternion_from_vectors_standard(initial_bone_direction, current_bone_direction)
     
     def world_to_local_quaternions(self, world_positions: np.ndarray) -> np.ndarray:
         """
