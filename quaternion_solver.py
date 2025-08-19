@@ -136,19 +136,15 @@ class QuaternionSolver:
             return quaternion
 
     def compute_bone_orientation(self, bone_index: int, bone_pos: np.ndarray, 
-                               child_pos: Optional[np.ndarray] = None) -> np.ndarray:
-        """Compute bone orientation from position and child position relative to T-pose"""
-        if child_pos is None:
-            # End effector - use identity quaternion
-            return np.array([1.0, 0.0, 0.0, 0.0])
-        
+                               child_index: int, child_pos: np.ndarray) -> np.ndarray:
+        """Compute bone orientation from parent-child positions relative to T-pose"""
         # Current bone direction vector (from parent to child)
         current_bone_direction = self.normalize_vector(child_pos - bone_pos)
         
-        # Get the initial T-pose direction for this bone
-        initial_bone_direction = self.skeleton.get_tpose_bone_direction(bone_index)
+        # Get the initial T-pose direction for this parent→child connection
+        initial_bone_direction = self.skeleton.get_tpose_parent_to_child_direction(bone_index, child_index)
         
-        # Use standard method as requested
+        # Use standard method to compute rotation from T-pose to current orientation
         return self.quaternion_from_vectors_standard(initial_bone_direction, current_bone_direction)
     
     def world_to_local_quaternions(self, world_positions: np.ndarray) -> np.ndarray:
@@ -175,13 +171,16 @@ class QuaternionSolver:
             bone_pos = world_positions[bone_idx]
             
             # Find primary child for bone orientation
-            child_pos = None
             if children:
                 # Use first child as primary direction
-                child_pos = world_positions[children[0]]
-            
-            # Compute world orientation for this bone relative to T-pose
-            world_quat = self.compute_bone_orientation(bone_idx, bone_pos, child_pos)
+                child_idx = children[0]
+                child_pos = world_positions[child_idx]
+                
+                # Compute world orientation for this bone relative to T-pose
+                world_quat = self.compute_bone_orientation(bone_idx, bone_pos, child_idx, child_pos)
+            else:
+                # End effector - use identity quaternion
+                world_quat = np.array([1.0, 0.0, 0.0, 0.0])
             world_quaternions[bone_idx] = world_quat
             
             # Convert to local space relative to parent

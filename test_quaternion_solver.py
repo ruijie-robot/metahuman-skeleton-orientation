@@ -147,23 +147,52 @@ def test_quaternion_methods():
     print("\nNote: Small differences are due to floating-point precision.")
 
 def test_tpose_directions():
-    """Test T-pose bone directions"""
-    print("\n--- Testing T-pose Bone Directions ---")
+    """Test T-pose parent-child bone directions"""
+    print("\n--- Testing T-pose Parent-Child Directions ---")
     
     skeleton = MetahumanSkeleton()
     
-    # Test a few key bones
-    test_bones = [
-        (1, "pelvis"),      # Should be Y-up
-        (8, "upperarm_l"),  # Should be X-left  
-        (27, "upperarm_r"), # Should be X-right
-        (45, "thigh_l"),    # Should be Y-down
-        (5, "neck_01"),     # Should be Y-up
+    # Test key parent→child connections
+    test_connections = [
+        (0, 1, "root → pelvis"),
+        (1, 2, "pelvis → spine_01"),
+        (4, 7, "spine_03 → clavicle_l"),
+        (4, 26, "spine_03 → clavicle_r"),
+        (7, 8, "clavicle_l → upperarm_l"),
+        (26, 27, "clavicle_r → upperarm_r"),
+        (8, 9, "upperarm_l → lowerarm_l"),
+        (27, 28, "upperarm_r → lowerarm_r"),
+        (1, 45, "pelvis → thigh_l"),
+        (1, 49, "pelvis → thigh_r"),
+        (45, 46, "thigh_l → calf_l"),
+        (5, 6, "neck_01 → head"),
     ]
     
-    for bone_idx, bone_name in test_bones:
-        direction = skeleton.get_tpose_bone_direction(bone_idx)
-        print(f"Bone {bone_idx:2d} ({bone_name:12s}): {direction}")
+    print(f"{'Connection':<30} {'T-pose Direction':<20} {'Description'}")
+    print("-" * 75)
+    
+    for parent_idx, child_idx, description in test_connections:
+        direction = skeleton.get_tpose_parent_to_child_direction(parent_idx, child_idx)
+        direction_str = f"[{direction[0]:5.1f}, {direction[1]:5.1f}, {direction[2]:5.1f}]"
+        
+        # Describe the direction
+        desc = ""
+        if np.allclose(direction, [0, 1, 0]):
+            desc = "Upward"
+        elif np.allclose(direction, [0, -1, 0]):
+            desc = "Downward"
+        elif np.allclose(direction, [-1, 0, 0]):
+            desc = "Left"
+        elif np.allclose(direction, [1, 0, 0]):
+            desc = "Right"
+        elif np.allclose(direction, [0, 0, 1]):
+            desc = "Forward"
+        else:
+            desc = "Custom"
+            
+        print(f"{description:<30} {direction_str:<20} {desc}")
+    
+    print(f"\nTotal bone count: {len(skeleton.bone_names)}")
     
     print("\nTest animation with different bone orientations...")
     
