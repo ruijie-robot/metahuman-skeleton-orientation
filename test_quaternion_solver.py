@@ -112,6 +112,40 @@ def demo_usage():
     
     return local_quaternions
 
+def test_quaternion_methods():
+    """Compare standard and optimized quaternion calculation methods"""
+    print("\n--- Comparing Quaternion Calculation Methods ---")
+    
+    solver = QuaternionSolver()
+    
+    # Test cases: different rotation angles
+    test_cases = [
+        ([1, 0, 0], [0, 1, 0], "90° rotation (X to Y)"),
+        ([1, 0, 0], [0.866, 0.5, 0], "30° rotation"),
+        ([1, 0, 0], [0.707, 0.707, 0], "45° rotation"),
+        ([1, 0, 0], [0, 0, 1], "90° rotation (X to Z)"),
+        ([1, 0, 0], [-1, 0, 0], "180° rotation"),
+        ([1, 0, 0], [1, 0, 0], "0° rotation (no change)"),
+    ]
+    
+    print(f"{'Test Case':<25} {'Standard Method':<25} {'Optimized Method':<25} {'Difference':<15}")
+    print("-" * 95)
+    
+    for vec_from, vec_to, description in test_cases:
+        vec_from = np.array(vec_from, dtype=float)
+        vec_to = np.array(vec_to, dtype=float)
+        
+        # Calculate using both methods
+        q_standard = solver.quaternion_from_vectors_standard(vec_from, vec_to)
+        q_optimized = solver.quaternion_from_vectors_optimized(vec_from, vec_to)
+        
+        # Calculate difference
+        diff = np.linalg.norm(q_standard - q_optimized)
+        
+        print(f"{description:<25} {str(np.round(q_standard, 3)):<25} {str(np.round(q_optimized, 3)):<25} {diff:<15.6f}")
+    
+    print("\nNote: Small differences are due to floating-point precision.")
+
 def test_tpose_directions():
     """Test T-pose bone directions"""
     print("\n--- Testing T-pose Bone Directions ---")
@@ -162,4 +196,5 @@ def test_tpose_directions():
 if __name__ == "__main__":
     test_quaternion_solver()
     demo_usage()
+    test_quaternion_methods()
     test_tpose_directions()
