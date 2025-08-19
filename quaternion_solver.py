@@ -66,34 +66,34 @@ class QuaternionSolver:
         """Get quaternion conjugate"""
         return np.array([q[0], -q[1], -q[2], -q[3]])
     
-    def compute_bone_orientation(self, bone_pos: np.ndarray, child_pos: Optional[np.ndarray] = None, 
-                               parent_orientation: Optional[np.ndarray] = None) -> np.ndarray:
-        """Compute bone orientation from position and child position"""
+    def compute_bone_orientation(self, bone_index: int, bone_pos: np.ndarray, 
+                               child_pos: Optional[np.ndarray] = None) -> np.ndarray:
+        """Compute bone orientation from position and child position relative to T-pose"""
         if child_pos is None:
             # End effector - use identity quaternion
             return np.array([1.0, 0.0, 0.0, 0.0])
         
-        # Bone direction vector
-        bone_direction = self.normalize_vector(child_pos - bone_pos)
+        # Current bone direction vector (from parent to child)
+        current_bone_direction = self.normalize_vector(child_pos - bone_pos)
         
-        # Default bone direction (assuming Y-axis)
-        default_direction = np.array([0.0, 1.0, 0.0])
+        # Get the initial T-pose direction for this bone
+        initial_bone_direction = self.skeleton.get_tpose_bone_direction(bone_index)
         
-        # Compute rotation to align default direction with bone direction
-        dot_product = np.dot(default_direction, bone_direction)
+        # Compute rotation from initial direction to current direction
+        dot_product = np.dot(initial_bone_direction, current_bone_direction)
         
         if abs(dot_product + 1.0) < 1e-6:
-            # 180-degree rotation
+            # 180-degree rotation - find perpendicular axis
             perp = np.array([1.0, 0.0, 0.0])
-            if abs(np.dot(default_direction, perp)) > 0.9:
+            if abs(np.dot(initial_bone_direction, perp)) > 0.9:
                 perp = np.array([0.0, 0.0, 1.0])
             quaternion = np.array([0.0, perp[0], perp[1], perp[2]])
         elif abs(dot_product - 1.0) < 1e-6:
             # No rotation needed
             quaternion = np.array([1.0, 0.0, 0.0, 0.0])
         else:
-            # Normal rotation
-            cross_product = np.cross(default_direction, bone_direction)
+            # Normal rotation from initial_bone_direction to current_bone_direction
+            cross_product = np.cross(initial_bone_direction, current_bone_direction)
             w = 1.0 + dot_product
             quaternion = np.array([w, cross_product[0], cross_product[1], cross_product[2]])
             quaternion = quaternion / np.linalg.norm(quaternion)
@@ -129,8 +129,8 @@ class QuaternionSolver:
                 # Use first child as primary direction
                 child_pos = world_positions[children[0]]
             
-            # Compute world orientation for this bone
-            world_quat = self.compute_bone_orientation(bone_pos, child_pos)
+            # Compute world orientation for this bone relative to T-pose
+            world_quat = self.compute_bone_orientation(bone_idx, bone_pos, child_pos)
             world_quaternions[bone_idx] = world_quat
             
             # Convert to local space relative to parent
