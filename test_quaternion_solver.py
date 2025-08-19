@@ -112,6 +112,54 @@ def demo_usage():
     
     return local_quaternions
 
+def test_tpose_directions():
+    """Test T-pose bone directions"""
+    print("\n--- Testing T-pose Bone Directions ---")
+    
+    skeleton = MetahumanSkeleton()
+    
+    # Test a few key bones
+    test_bones = [
+        (1, "pelvis"),      # Should be Y-up
+        (8, "upperarm_l"),  # Should be X-left  
+        (27, "upperarm_r"), # Should be X-right
+        (45, "thigh_l"),    # Should be Y-down
+        (5, "neck_01"),     # Should be Y-up
+    ]
+    
+    for bone_idx, bone_name in test_bones:
+        direction = skeleton.get_tpose_bone_direction(bone_idx)
+        print(f"Bone {bone_idx:2d} ({bone_name:12s}): {direction}")
+    
+    print("\nTest animation with different bone orientations...")
+    
+    # Create test data with specific bone orientations
+    animation_data = np.zeros((1, 68, 3))
+    
+    # Root at origin
+    animation_data[0, 0] = [0, 0, 0]
+    # Pelvis slightly above
+    animation_data[0, 1] = [0, 0.1, 0]
+    # Left upperarm: T-pose position (horizontal left)
+    animation_data[0, 7] = [-0.1, 0.7, 0]  # clavicle_l
+    animation_data[0, 8] = [-0.3, 0.7, 0]  # upperarm_l
+    animation_data[0, 9] = [-0.5, 0.7, 0]  # lowerarm_l
+    
+    # Test different arm position (arm down)
+    animation_data_down = animation_data.copy()
+    animation_data_down[0, 9] = [-0.3, 0.5, 0]  # lowerarm_l moved down
+    
+    solver = QuaternionSolver()
+    
+    print("\nT-pose quaternions:")
+    result_tpose = solver.process_animation_sequence(animation_data)
+    print(f"Upperarm_l quaternion (T-pose): {result_tpose[0, 8]}")
+    
+    print("\nArm-down quaternions:")
+    result_down = solver.process_animation_sequence(animation_data_down)
+    print(f"Upperarm_l quaternion (arm down): {result_down[0, 8]}")
+
 if __name__ == "__main__":
     test_quaternion_solver()
     demo_usage()
+    test_tpose_directions()
