@@ -123,68 +123,119 @@ class MetahumanSkeleton:
                 children.append(i)
         return children
     
-    def get_tpose_bone_direction(self, bone_index: int) -> np.ndarray:
-        """Get the initial bone direction in Unity T-pose coordinate system"""
-        bone_name = self.bone_names[bone_index]
+    def get_tpose_parent_to_child_direction(self, parent_index: int, child_index: int) -> np.ndarray:
+        """
+        Get the initial direction from parent bone to child bone in Unity T-pose
+        Unity T-pose coordinate system: X-right, Y-up, Z-forward
+        """
+        if parent_index < 0 or child_index < 0 or parent_index >= len(self.bone_names) or child_index >= len(self.bone_names):
+            return np.array([0.0, 1.0, 0.0])  # Default direction
+            
+        parent_name = self.bone_names[parent_index]
+        child_name = self.bone_names[child_index]
         
-        # Unity T-pose coordinate system: X-right, Y-up, Z-forward
+        # Define T-pose directions based on parent→child relationships
         
-        if "spine" in bone_name or "neck" in bone_name:
-            return np.array([0.0, 1.0, 0.0])  # Y-up (向上)
+        # Root to pelvis: upward
+        if parent_name == "root" and child_name == "pelvis":
+            return np.array([0.0, 1.0, 0.0])
             
-        elif "clavicle" in bone_name:
-            if "_l" in bone_name:
-                return np.array([-1.0, 0.0, 0.0])  # X负方向 (向左)
+        # Spine chain: upward
+        elif "spine" in parent_name and ("spine" in child_name or "neck" in child_name):
+            return np.array([0.0, 1.0, 0.0])
+            
+        # Neck to head: upward
+        elif "neck" in parent_name and "head" in child_name:
+            return np.array([0.0, 1.0, 0.0])
+            
+        # Spine to clavicles: horizontal outward
+        elif "spine" in parent_name and "clavicle" in child_name:
+            if "_l" in child_name:
+                return np.array([-1.0, 0.0, 0.0])  # Left clavicle
             else:
-                return np.array([1.0, 0.0, 0.0])   # X正方向 (向右)
+                return np.array([1.0, 0.0, 0.0])   # Right clavicle
                 
-        elif "upperarm" in bone_name or "lowerarm" in bone_name or "hand" in bone_name:
-            if "_l" in bone_name:
-                return np.array([-1.0, 0.0, 0.0])  # X负方向 (左臂水平向左)
+        # Clavicle to upperarm: horizontal outward
+        elif "clavicle" in parent_name and "upperarm" in child_name:
+            if "_l" in child_name:
+                return np.array([-1.0, 0.0, 0.0])  # Left arm
             else:
-                return np.array([1.0, 0.0, 0.0])   # X正方向 (右臂水平向右)
+                return np.array([1.0, 0.0, 0.0])   # Right arm
                 
-        elif "thigh" in bone_name or "calf" in bone_name:
-            return np.array([0.0, -1.0, 0.0])     # Y负方向 (腿部向下)
-            
-        elif "foot" in bone_name or "ball" in bone_name:
-            return np.array([0.0, 0.0, 1.0])      # Z正方向 (脚趾向前)
-            
-        elif "thumb" in bone_name:
-            if "_l" in bone_name:
-                return np.array([0.0, 0.0, 1.0])   # Z正方向 (拇指向前)
+        # Arm chain: horizontal outward (T-pose)
+        elif ("upperarm" in parent_name and "lowerarm" in child_name) or \
+             ("lowerarm" in parent_name and "hand" in child_name):
+            if "_l" in child_name:
+                return np.array([-1.0, 0.0, 0.0])  # Left arm extension
             else:
-                return np.array([0.0, 0.0, 1.0])   # Z正方向
+                return np.array([1.0, 0.0, 0.0])   # Right arm extension
                 
-        elif "index" in bone_name or "middle" in bone_name or "ring" in bone_name or "pinky" in bone_name:
-            if "_l" in bone_name:
-                return np.array([-1.0, 0.0, 0.0]) # X负方向 (左手手指向左延伸)
+        # Hand to fingers
+        elif "hand" in parent_name and any(finger in child_name for finger in ["thumb", "index", "middle", "ring", "pinky"]):
+            if "thumb" in child_name:
+                # Thumb points forward and slightly outward
+                if "_l" in child_name:
+                    return np.array([-0.5, 0.0, 0.866])  # 30° forward from left
+                else:
+                    return np.array([0.5, 0.0, 0.866])   # 30° forward from right
             else:
-                return np.array([1.0, 0.0, 0.0])  # X正方向 (右手手指向右延伸)
+                # Other fingers extend along arm direction
+                if "_l" in child_name:
+                    return np.array([-1.0, 0.0, 0.0])
+                else:
+                    return np.array([1.0, 0.0, 0.0])
+                    
+        # Finger joints: continue in same direction
+        elif any(finger in parent_name for finger in ["thumb", "index", "middle", "ring", "pinky"]) and \
+             any(finger in child_name for finger in ["thumb", "index", "middle", "ring", "pinky"]):
+            if "thumb" in parent_name:
+                if "_l" in child_name:
+                    return np.array([-0.5, 0.0, 0.866])
+                else:
+                    return np.array([0.5, 0.0, 0.866])
+            else:
+                if "_l" in child_name:
+                    return np.array([-1.0, 0.0, 0.0])
+                else:
+                    return np.array([1.0, 0.0, 0.0])
+                    
+        # Pelvis to thighs: downward
+        elif "pelvis" in parent_name and "thigh" in child_name:
+            return np.array([0.0, -1.0, 0.0])
+            
+        # Leg chain: downward
+        elif ("thigh" in parent_name and "calf" in child_name) or \
+             ("calf" in parent_name and "foot" in child_name):
+            return np.array([0.0, -1.0, 0.0])
+            
+        # Foot to ball: forward
+        elif "foot" in parent_name and "ball" in child_name:
+            return np.array([0.0, 0.0, 1.0])
+            
+        # Head to facial features
+        elif "head" in parent_name and child_name in ["jaw", "eye_l", "eye_r"]:
+            if child_name == "jaw":
+                return np.array([0.0, -1.0, 0.0])  # Jaw downward
+            else:
+                return np.array([0.0, 0.0, 1.0])   # Eyes forward
                 
-        elif "head" in bone_name:
-            return np.array([0.0, 1.0, 0.0])      # Y正方向 (头部向上)
+        # Spine to breasts: forward
+        elif "spine" in parent_name and "breast" in child_name:
+            return np.array([0.0, 0.0, 1.0])
             
-        elif "jaw" in bone_name:
-            return np.array([0.0, -1.0, 0.0])     # Y负方向 (下巴向下)
-            
-        elif "eye" in bone_name:
-            return np.array([0.0, 0.0, 1.0])      # Z正方向 (眼睛向前)
-            
-        elif "breast" in bone_name:
-            return np.array([0.0, 0.0, 1.0])      # Z正方向 (胸部向前)
-            
-        elif "twist" in bone_name:
-            # 扭转骨骼跟随父骨骼方向
-            parent_idx = self.parent_indices[bone_index]
-            if parent_idx >= 0:
-                return self.get_tpose_bone_direction(parent_idx)
+        # Twist bones: follow parent direction
+        elif "twist" in child_name:
+            # Get the main bone direction (parent of twist bone)
+            main_parent_idx = self.parent_indices[parent_index] if parent_index > 0 else -1
+            if main_parent_idx >= 0:
+                return self.get_tpose_parent_to_child_direction(main_parent_idx, parent_index)
             else:
                 return np.array([0.0, 1.0, 0.0])
                 
-        elif "ik_" in bone_name:
-            return np.array([0.0, 1.0, 0.0])      # IK骨骼默认向上
+        # IK bones: upward by default
+        elif "ik_" in parent_name or "ik_" in child_name:
+            return np.array([0.0, 1.0, 0.0])
             
+        # Default: upward
         else:
-            # 默认方向
-            return np.array([0.0, 1.0, 0.0])      # Y正方向 (默认向上)
+            return np.array([0.0, 1.0, 0.0])
