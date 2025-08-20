@@ -95,7 +95,10 @@ class QuaternionSolverXML:
         current_direction = self.normalize_vector(child_pos - parent_pos)
         
         # 获取该关节在T-pose中的初始方向
-        initial_direction = joint.tpose_direction
+        if joint.name == None:
+            initial_direction = np.array([0.0, 1.0, 0.0])
+        else:
+            initial_direction = joint.tpose_direction
         
         # 计算从T-pose到当前朝向的旋转
         return self.quaternion_from_vectors_standard(initial_direction, current_direction)
@@ -115,33 +118,28 @@ class QuaternionSolverXML:
             raise ValueError(f"Expected shape ({expected_links}, 3), got {world_positions.shape}")
         
         num_joints = len(self.joints)
-        local_quaternions = np.zeros((num_joints, 4))
-        world_quaternions = np.zeros((num_joints, 4))
+        local_quaternions = np.zeros((num_joints+1, 4))
         
+        # 首先处理root骨骼点
+        root_pos = world_positions[0]
+        # 如果root_pos的坐标系是(0,0,0), 那么orientation使用(1, 0, 0, 0)
+        if np.allclose(root_pos, np.zeros(3)):
+            root_orientation = np.array([1.0, 0.0, 0.0, 0.0])
+        else:
+            # 反之，origin_pos = (0,0,0), 计算local_quat = self.compute_joint_orientation(joint, origin_pos, root_pos)
+            origin_pos = np.zeros(3)
+            # 这里假设root joint为第一个joint
+            root_orientation = self.compute_joint_orientation(None, origin_pos, root_pos)
+        local_quaternions[0] = root_orientation
+
         # 按顺序处理关节
         for joint_idx, joint in enumerate(self.joints):
-            # 获取位置
             parent_pos = world_positions[joint.parent_index]
             child_pos = world_positions[joint.child_index]
-            
+                
             # 计算该关节相对于T-pose的世界朝向
-            world_quat = self.compute_joint_orientation(joint, parent_pos, child_pos)
-            world_quaternions[joint_idx] = world_quat
-            
-            # 转换为相对于父关节的局部空间
-            if joint.parent_index == 0:  # 假设索引0是root
-                # root的直接子节点 - 世界四元数就是局部四元数
-                local_quaternions[joint_idx] = world_quat
-            else:
-                # 查找父关节
-                parent_joint = self.urdf_parser.get_joint_by_child_index(joint.parent_index)
-                if parent_joint is not None:
-                    parent_joint_idx = self.urdf_parser.joint_name_to_index[parent_joint.name]
-                    parent_world_quat = world_quaternions[parent_joint_idx]
-                    parent_conjugate = self.quaternion_conjugate(parent_world_quat)
-                    local_quaternions[joint_idx] = self.quaternion_multiply(parent_conjugate, world_quat)
-                else:
-                    local_quaternions[joint_idx] = world_quat
+            local_quat = self.compute_joint_orientation(joint, parent_pos, child_pos)
+            local_quaternions[joint_idx+1] = local_quat
         
         return local_quaternions
     

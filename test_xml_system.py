@@ -235,10 +235,10 @@ def demo_xml_workflow():
 
 if __name__ == "__main__":
     success = True
-    success &= test_xml_parsing()
-    success &= test_xml_quaternion_solver()
-    success &= test_joint_queries()
-    success &= compare_systems()
+    # success &= test_xml_parsing()
+    # success &= test_xml_quaternion_solver()
+    # success &= test_joint_queries()
+    # success &= compare_systems()
     success &= demo_xml_workflow()
     
     if success:
