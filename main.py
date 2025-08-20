@@ -94,35 +94,11 @@ def demo_workflow():
 
 def main():
     """主函数"""
-    print("=" * 60)
-    print("MetaHuman 骨架方向求解器")
-    print("=" * 60)
-    print()
-    
     try:
         # 运行XML工作流程演示
         success = demo_workflow()
-        
-        print()
-        if success:
-            print("🎉 演示完成！系统运行正常。")
-            print()
-            print("接下来您可以:")
-            print("  1. 使用自己的动画数据替换示例数据")
-            print("  2. 修改 metahuman.urdf 文件调整骨架结构")
-            print("  3. 查看 README.md 了解更多使用方法")
-            return 0
-        else:
-            print("❌ 演示失败！请检查系统配置。")
-            return 1
-            
     except Exception as e:
         print(f"❌ 运行错误: {e}")
-        print("请确保所有必要的文件都在当前目录中：")
-        print("  - metahuman.urdf")
-        print("  - urdf_parser.py")
-        print("  - quaternion_solver_xml.py")
-        return 1
 
 if __name__ == "__main__":
     exit_code = main()

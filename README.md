@@ -1,5 +1,7 @@
 # MetaHuman 骨架方向求解器
 
+Author: Ruijie
+
 本项目解决将 MetaHuman 骨架的世界坐标转换为动画序列中局部四元数的问题。
 
 ## 问题描述
@@ -27,6 +29,8 @@ python main.py
 
 ## 骨架结构
 
+Author: Ruijie
+
 ### MetaHuman 骨架包含：
 - **68个骨骼** (Links): 从root到手指尖端的完整人体骨架
 - **67个关节** (Joints): 连接骨骼的旋转关节
@@ -43,6 +47,8 @@ root
 ```
 
 ## 算法原理
+
+Author: Ruijie
 
 ### 1. T-pose 参考系统
 - 使用Unity坐标系: X-右, Y-上, Z-前
@@ -65,6 +71,8 @@ q = [cos(θ/2), u_x * sin(θ/2), u_y * sin(θ/2), u_z * sin(θ/2)]
 
 
 ## URDF文件格式
+
+Author: Ruijie
 
 ### 为什么使用URDF格式来定义骨骼层？
 `metahuman.urdf` 使用标准URDF XML格式, 
@@ -102,6 +110,8 @@ URDF（Unified Robot Description Format）是机器人领域的标准骨架描�
 
 
 ## 常见问题
+
+Author: Ruijie
 
 ### Q: 为什么返回68个四元数而不是67个？
 A: 虽然只有67个关节连接，但我们额外包含了root骨骼的四元数，用于表示整个人体在世界空间中的朝向。
