@@ -1,0 +1,554 @@
+<?xml version="1.0"?>
+<robot name="metahuman">
+
+  <!-- Links (68 bones) -->
+  <link name="root"/>
+  <link name="pelvis"/>
+  <link name="spine_01"/>
+  <link name="spine_02"/>
+  <link name="spine_03"/>
+  <link name="neck_01"/>
+  <link name="head"/>
+  <link name="clavicle_l"/>
+  <link name="upperarm_l"/>
+  <link name="lowerarm_l"/>
+  <link name="hand_l"/>
+  <link name="thumb_01_l"/>
+  <link name="thumb_02_l"/>
+  <link name="thumb_03_l"/>
+  <link name="index_01_l"/>
+  <link name="index_02_l"/>
+  <link name="index_03_l"/>
+  <link name="middle_01_l"/>
+  <link name="middle_02_l"/>
+  <link name="middle_03_l"/>
+  <link name="ring_01_l"/>
+  <link name="ring_02_l"/>
+  <link name="ring_03_l"/>
+  <link name="pinky_01_l"/>
+  <link name="pinky_02_l"/>
+  <link name="pinky_03_l"/>
+  <link name="clavicle_r"/>
+  <link name="upperarm_r"/>
+  <link name="lowerarm_r"/>
+  <link name="hand_r"/>
+  <link name="thumb_01_r"/>
+  <link name="thumb_02_r"/>
+  <link name="thumb_03_r"/>
+  <link name="index_01_r"/>
+  <link name="index_02_r"/>
+  <link name="index_03_r"/>
+  <link name="middle_01_r"/>
+  <link name="middle_02_r"/>
+  <link name="middle_03_r"/>
+  <link name="ring_01_r"/>
+  <link name="ring_02_r"/>
+  <link name="ring_03_r"/>
+  <link name="pinky_01_r"/>
+  <link name="pinky_02_r"/>
+  <link name="pinky_03_r"/>
+  <link name="thigh_l"/>
+  <link name="calf_l"/>
+  <link name="foot_l"/>
+  <link name="ball_l"/>
+  <link name="thigh_r"/>
+  <link name="calf_r"/>
+  <link name="foot_r"/>
+  <link name="ball_r"/>
+  <link name="ik_foot_root"/>
+  <link name="ik_foot_l"/>
+  <link name="ik_foot_r"/>
+  <link name="ik_hand_root"/>
+  <link name="ik_hand_gun"/>
+  <link name="ik_hand_l"/>
+  <link name="ik_hand_r"/>
+  <link name="jaw"/>
+  <link name="eye_l"/>
+  <link name="eye_r"/>
+  <link name="breast_l"/>
+  <link name="breast_r"/>
+  <link name="twist_01_thigh_l"/>
+  <link name="twist_01_thigh_r"/>
+  <link name="twist_01_upperarm_l"/>
+
+  <!-- Joints (67 connections) -->
+  
+  <!-- Root to Pelvis -->
+  <joint name="root_to_pelvis" type="revolute">
+    <parent link="root"/>
+    <child link="pelvis"/>
+    <axis xyz="0 0 1"/>
+    <origin xyz="0 0.1 0"/>
+    <!-- Custom property: T-pose direction -->
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <!-- Spine Chain -->
+  <joint name="pelvis_to_spine_01" type="revolute">
+    <parent link="pelvis"/>
+    <child link="spine_01"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="spine_01_to_spine_02" type="revolute">
+    <parent link="spine_01"/>
+    <child link="spine_02"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="spine_02_to_spine_03" type="revolute">
+    <parent link="spine_02"/>
+    <child link="spine_03"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="spine_03_to_neck_01" type="revolute">
+    <parent link="spine_03"/>
+    <child link="neck_01"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="neck_01_to_head" type="revolute">
+    <parent link="neck_01"/>
+    <child link="head"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <!-- Left Arm Chain -->
+  <joint name="spine_03_to_clavicle_l" type="revolute">
+    <parent link="spine_03"/>
+    <child link="clavicle_l"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="clavicle_l_to_upperarm_l" type="revolute">
+    <parent link="clavicle_l"/>
+    <child link="upperarm_l"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="upperarm_l_to_lowerarm_l" type="revolute">
+    <parent link="upperarm_l"/>
+    <child link="lowerarm_l"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="lowerarm_l_to_hand_l" type="revolute">
+    <parent link="lowerarm_l"/>
+    <child link="hand_l"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <!-- Left Hand Fingers -->
+  <joint name="hand_l_to_thumb_01_l" type="revolute">
+    <parent link="hand_l"/>
+    <child link="thumb_01_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-0.5 0 0.866"/>
+  </joint>
+
+  <joint name="thumb_01_l_to_thumb_02_l" type="revolute">
+    <parent link="thumb_01_l"/>
+    <child link="thumb_02_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-0.5 0 0.866"/>
+  </joint>
+
+  <joint name="thumb_02_l_to_thumb_03_l" type="revolute">
+    <parent link="thumb_02_l"/>
+    <child link="thumb_03_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-0.5 0 0.866"/>
+  </joint>
+
+  <joint name="hand_l_to_index_01_l" type="revolute">
+    <parent link="hand_l"/>
+    <child link="index_01_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="index_01_l_to_index_02_l" type="revolute">
+    <parent link="index_01_l"/>
+    <child link="index_02_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="index_02_l_to_index_03_l" type="revolute">
+    <parent link="index_02_l"/>
+    <child link="index_03_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="hand_l_to_middle_01_l" type="revolute">
+    <parent link="hand_l"/>
+    <child link="middle_01_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="middle_01_l_to_middle_02_l" type="revolute">
+    <parent link="middle_01_l"/>
+    <child link="middle_02_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="middle_02_l_to_middle_03_l" type="revolute">
+    <parent link="middle_02_l"/>
+    <child link="middle_03_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="hand_l_to_ring_01_l" type="revolute">
+    <parent link="hand_l"/>
+    <child link="ring_01_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="ring_01_l_to_ring_02_l" type="revolute">
+    <parent link="ring_01_l"/>
+    <child link="ring_02_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="ring_02_l_to_ring_03_l" type="revolute">
+    <parent link="ring_02_l"/>
+    <child link="ring_03_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="hand_l_to_pinky_01_l" type="revolute">
+    <parent link="hand_l"/>
+    <child link="pinky_01_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="pinky_01_l_to_pinky_02_l" type="revolute">
+    <parent link="pinky_01_l"/>
+    <child link="pinky_02_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <joint name="pinky_02_l_to_pinky_03_l" type="revolute">
+    <parent link="pinky_02_l"/>
+    <child link="pinky_03_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+  <!-- Right Arm Chain -->
+  <joint name="spine_03_to_clavicle_r" type="revolute">
+    <parent link="spine_03"/>
+    <child link="clavicle_r"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="clavicle_r_to_upperarm_r" type="revolute">
+    <parent link="clavicle_r"/>
+    <child link="upperarm_r"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="upperarm_r_to_lowerarm_r" type="revolute">
+    <parent link="upperarm_r"/>
+    <child link="lowerarm_r"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="lowerarm_r_to_hand_r" type="revolute">
+    <parent link="lowerarm_r"/>
+    <child link="hand_r"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <!-- Right Hand Fingers -->
+  <joint name="hand_r_to_thumb_01_r" type="revolute">
+    <parent link="hand_r"/>
+    <child link="thumb_01_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="0.5 0 0.866"/>
+  </joint>
+
+  <joint name="thumb_01_r_to_thumb_02_r" type="revolute">
+    <parent link="thumb_01_r"/>
+    <child link="thumb_02_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="0.5 0 0.866"/>
+  </joint>
+
+  <joint name="thumb_02_r_to_thumb_03_r" type="revolute">
+    <parent link="thumb_02_r"/>
+    <child link="thumb_03_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="0.5 0 0.866"/>
+  </joint>
+
+  <joint name="hand_r_to_index_01_r" type="revolute">
+    <parent link="hand_r"/>
+    <child link="index_01_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="index_01_r_to_index_02_r" type="revolute">
+    <parent link="index_01_r"/>
+    <child link="index_02_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="index_02_r_to_index_03_r" type="revolute">
+    <parent link="index_02_r"/>
+    <child link="index_03_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="hand_r_to_middle_01_r" type="revolute">
+    <parent link="hand_r"/>
+    <child link="middle_01_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="middle_01_r_to_middle_02_r" type="revolute">
+    <parent link="middle_01_r"/>
+    <child link="middle_02_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="middle_02_r_to_middle_03_r" type="revolute">
+    <parent link="middle_02_r"/>
+    <child link="middle_03_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="hand_r_to_ring_01_r" type="revolute">
+    <parent link="hand_r"/>
+    <child link="ring_01_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="ring_01_r_to_ring_02_r" type="revolute">
+    <parent link="ring_01_r"/>
+    <child link="ring_02_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="ring_02_r_to_ring_03_r" type="revolute">
+    <parent link="ring_02_r"/>
+    <child link="ring_03_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="hand_r_to_pinky_01_r" type="revolute">
+    <parent link="hand_r"/>
+    <child link="pinky_01_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="pinky_01_r_to_pinky_02_r" type="revolute">
+    <parent link="pinky_01_r"/>
+    <child link="pinky_02_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <joint name="pinky_02_r_to_pinky_03_r" type="revolute">
+    <parent link="pinky_02_r"/>
+    <child link="pinky_03_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="1 0 0"/>
+  </joint>
+
+  <!-- Leg Chains -->
+  <joint name="pelvis_to_thigh_l" type="revolute">
+    <parent link="pelvis"/>
+    <child link="thigh_l"/>
+    <axis xyz="1 0 0"/>
+    <tpose_direction xyz="0 -1 0"/>
+  </joint>
+
+  <joint name="thigh_l_to_calf_l" type="revolute">
+    <parent link="thigh_l"/>
+    <child link="calf_l"/>
+    <axis xyz="1 0 0"/>
+    <tpose_direction xyz="0 -1 0"/>
+  </joint>
+
+  <joint name="calf_l_to_foot_l" type="revolute">
+    <parent link="calf_l"/>
+    <child link="foot_l"/>
+    <axis xyz="1 0 0"/>
+    <tpose_direction xyz="0 -1 0"/>
+  </joint>
+
+  <joint name="foot_l_to_ball_l" type="revolute">
+    <parent link="foot_l"/>
+    <child link="ball_l"/>
+    <axis xyz="1 0 0"/>
+    <tpose_direction xyz="0 0 1"/>
+  </joint>
+
+  <joint name="pelvis_to_thigh_r" type="revolute">
+    <parent link="pelvis"/>
+    <child link="thigh_r"/>
+    <axis xyz="1 0 0"/>
+    <tpose_direction xyz="0 -1 0"/>
+  </joint>
+
+  <joint name="thigh_r_to_calf_r" type="revolute">
+    <parent link="thigh_r"/>
+    <child link="calf_r"/>
+    <axis xyz="1 0 0"/>
+    <tpose_direction xyz="0 -1 0"/>
+  </joint>
+
+  <joint name="calf_r_to_foot_r" type="revolute">
+    <parent link="calf_r"/>
+    <child link="foot_r"/>
+    <axis xyz="1 0 0"/>
+    <tpose_direction xyz="0 -1 0"/>
+  </joint>
+
+  <joint name="foot_r_to_ball_r" type="revolute">
+    <parent link="foot_r"/>
+    <child link="ball_r"/>
+    <axis xyz="1 0 0"/>
+    <tpose_direction xyz="0 0 1"/>
+  </joint>
+
+  <!-- IK Chains -->
+  <joint name="root_to_ik_foot_root" type="fixed">
+    <parent link="root"/>
+    <child link="ik_foot_root"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="ik_foot_root_to_ik_foot_l" type="revolute">
+    <parent link="ik_foot_root"/>
+    <child link="ik_foot_l"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="ik_foot_root_to_ik_foot_r" type="revolute">
+    <parent link="ik_foot_root"/>
+    <child link="ik_foot_r"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="root_to_ik_hand_root" type="fixed">
+    <parent link="root"/>
+    <child link="ik_hand_root"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="ik_hand_root_to_ik_hand_gun" type="revolute">
+    <parent link="ik_hand_root"/>
+    <child link="ik_hand_gun"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="ik_hand_root_to_ik_hand_l" type="revolute">
+    <parent link="ik_hand_root"/>
+    <child link="ik_hand_l"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <joint name="ik_hand_root_to_ik_hand_r" type="revolute">
+    <parent link="ik_hand_root"/>
+    <child link="ik_hand_r"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="0 1 0"/>
+  </joint>
+
+  <!-- Head Features -->
+  <joint name="head_to_jaw" type="revolute">
+    <parent link="head"/>
+    <child link="jaw"/>
+    <axis xyz="1 0 0"/>
+    <tpose_direction xyz="0 -1 0"/>
+  </joint>
+
+  <joint name="head_to_eye_l" type="revolute">
+    <parent link="head"/>
+    <child link="eye_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="0 0 1"/>
+  </joint>
+
+  <joint name="head_to_eye_r" type="revolute">
+    <parent link="head"/>
+    <child link="eye_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="0 0 1"/>
+  </joint>
+
+  <!-- Breast -->
+  <joint name="spine_03_to_breast_l" type="fixed">
+    <parent link="spine_03"/>
+    <child link="breast_l"/>
+    <tpose_direction xyz="0 0 1"/>
+  </joint>
+
+  <joint name="spine_03_to_breast_r" type="fixed">
+    <parent link="spine_03"/>
+    <child link="breast_r"/>
+    <tpose_direction xyz="0 0 1"/>
+  </joint>
+
+  <!-- Twist Bones -->
+  <joint name="thigh_l_to_twist_01_thigh_l" type="revolute">
+    <parent link="thigh_l"/>
+    <child link="twist_01_thigh_l"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="0 -1 0"/>
+  </joint>
+
+  <joint name="thigh_r_to_twist_01_thigh_r" type="revolute">
+    <parent link="thigh_r"/>
+    <child link="twist_01_thigh_r"/>
+    <axis xyz="0 1 0"/>
+    <tpose_direction xyz="0 -1 0"/>
+  </joint>
+
+  <joint name="upperarm_l_to_twist_01_upperarm_l" type="revolute">
+    <parent link="upperarm_l"/>
+    <child link="twist_01_upperarm_l"/>
+    <axis xyz="0 0 1"/>
+    <tpose_direction xyz="-1 0 0"/>
+  </joint>
+
+</robot>
