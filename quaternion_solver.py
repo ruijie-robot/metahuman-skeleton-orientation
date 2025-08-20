@@ -95,8 +95,8 @@ class QuaternionSolverXML:
         current_direction = self.normalize_vector(child_pos - parent_pos)
         
         # 获取该关节在T-pose中的初始方向
-        if joint.name == None:
-            initial_direction = np.array([0.0, 1.0, 0.0])
+        if joint is None:
+            initial_direction = np.array([0.0, 1.0, 0.0])  # root的默认方向
         else:
             initial_direction = joint.tpose_direction
         
@@ -111,7 +111,7 @@ class QuaternionSolverXML:
             world_positions: 形状为 (68, 3) 的数组，包含所有骨骼的世界坐标
             
         Returns:
-            形状为 (67, 4) 的数组，包含关节连接的局部四元数 (w, x, y, z)
+            形状为 (68, 4) 的数组，包含骨骼的局部四元数 (w, x, y, z)，包括root骨骼
         """
         expected_links = len(self.links)
         if world_positions.shape != (expected_links, 3):
@@ -151,7 +151,7 @@ class QuaternionSolverXML:
             animation_data: 形状为 (num_frames, 68, 3) 的数组，包含世界坐标
             
         Returns:
-            形状为 (num_frames, 67, 4) 的数组，包含关节连接的局部四元数
+            形状为 (num_frames, 68, 4) 的数组，包含骨骼的局部四元数（包括root）
         """
         num_frames = animation_data.shape[0]
         expected_links = len(self.links)
@@ -159,8 +159,8 @@ class QuaternionSolverXML:
         if animation_data.shape[1:] != (expected_links, 3):
             raise ValueError(f"Expected shape (num_frames, {expected_links}, 3), got {animation_data.shape}")
         
-        num_joints = len(self.joints)
-        result = np.zeros((num_frames, num_joints, 4))
+        # 返回68个四元数（67个关节 + 1个root骨骼）
+        result = np.zeros((num_frames, 68, 4))
         
         for frame_idx in range(num_frames):
             result[frame_idx] = self.world_to_local_quaternions(animation_data[frame_idx])
