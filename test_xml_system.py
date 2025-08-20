@@ -148,59 +148,6 @@ def test_joint_queries():
         print(f"✗ Joint queries test failed: {e}")
         return False
 
-def compare_systems():
-    """比较不同系统的输出"""
-    print("\n=== Comparing Systems ===")
-    
-    try:
-        # 导入原始系统
-        from quaternion_solver import QuaternionSolver
-        
-        # 创建求解器
-        solver_original = QuaternionSolver()
-        solver_xml = QuaternionSolverXML("metahuman.urdf")
-        
-        # 创建测试数据
-        animation_data = create_test_animation_data(1)
-        
-        # 用两个系统处理
-        result_original = solver_original.process_animation_sequence(animation_data)
-        result_xml = solver_xml.process_animation_sequence(animation_data)
-        
-        print(f"Original system output: {result_original.shape}")
-        print(f"XML system output:      {result_xml.shape}")
-        
-        if result_original.shape == result_xml.shape:
-            print("✓ Output shapes match!")
-            
-            # 计算差异
-            differences = np.linalg.norm(result_original[0] - result_xml[0], axis=1)
-            print(f"\nQuaternion differences (first 10):")
-            for i in range(min(10, len(differences))):
-                print(f"  Joint {i:2d}: {differences[i]:.6f}")
-            
-            avg_diff = np.mean(differences)
-            max_diff = np.max(differences)
-            print(f"\nAverage difference: {avg_diff:.6f}")
-            print(f"Maximum difference: {max_diff:.6f}")
-            
-            if max_diff < 1e-10:
-                print("✓ Results are identical!")
-            elif max_diff < 1e-6:
-                print("✓ Results are very similar (within numerical precision)")
-            else:
-                print("⚠ Results differ - this might be expected due to different implementations")
-        else:
-            print("✗ Output shapes don't match!")
-        
-        return True
-        
-    except ImportError:
-        print("Original system not available for comparison")
-        return True
-    except Exception as e:
-        print(f"✗ System comparison failed: {e}")
-        return False
 
 def demo_xml_workflow():
     """演示完整的XML工作流程"""
@@ -238,7 +185,6 @@ if __name__ == "__main__":
     # success &= test_xml_parsing()
     # success &= test_xml_quaternion_solver()
     # success &= test_joint_queries()
-    # success &= compare_systems()
     success &= demo_xml_workflow()
     
     if success:
